@@ -59,7 +59,14 @@ bot.on('message', async (msg) => {
                     start_date: new Date(),
                     calls: 0
                 })
-                await info.updateOne({}, { $inc: { users: 1 } })
+                
+                await info.findOne().then(async res => {
+                    if (res === null) {
+                        await info.insertOne({ users: 1 })
+                    } else {
+                        await info.updateOne({}, { $inc: { users: 1 } })
+                    }
+                })
             }
         })
     } else if (text === '/post' && msg.from.username === 'SmartMainnet') {
