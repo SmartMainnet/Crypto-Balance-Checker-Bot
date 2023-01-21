@@ -5,10 +5,9 @@ const { MongoClient } = require('mongodb')
 const client = new MongoClient(MONGODB_URI)
 
 client.connect()
-const db = client.db('crypto-balance-checker-bot')
 
+const db = client.db('crypto-balance-checker-bot')
 const users = db.collection('users')
-const info = db.collection('info')
 
 const Web3 = require('web3')
 const TelegramApi = require('node-telegram-bot-api')
@@ -16,153 +15,135 @@ const TelegramApi = require('node-telegram-bot-api')
 const token = BOT_API
 const bot = new TelegramApi(token, { polling: true })
 
-let isPost = false
+const ethWeb3 = new Web3(ETH_API)
+const bnbWeb3 = new Web3(BNB_API)
+const maticWeb3 = new Web3(MATIC_API)
+const avaxWeb3 = new Web3(AVAX_API)
+const ftmWeb3 = new Web3(FTM_API)
 
-bot.on('message', async (msg) => {
-    const text = msg.text
-    const chatId = msg.chat.id
-    const language = msg.from.language_code
+bot.on('message', async msg => {
+  const text = msg.text
+  const chatId = msg.chat.id
+  const language = msg.from.language_code
 
+  try {
     if (text === '/start') {
-        await bot.sendSticker(chatId, STICKER)
-        if (language === 'ru') {
-            await bot.sendMessage(chatId,
-                `👋🏻 Привет ${msg.from.first_name}${(msg.from.last_name === undefined) ? '': ` ${msg.from.last_name}`}!\n` +
-                '🔎 Это бот для проверки балансов криптокошельков.\n' +
-                '👨🏻‍💻 Автор: @SmartMainnet'
-            )
+      await bot.sendSticker(chatId, STICKER)
+      if (language === 'ru') {
+        await bot.sendMessage(chatId,
+          `👋🏻 Привет ${msg.from.first_name}${(msg.from.last_name === undefined) ? '': ` ${msg.from.last_name}`}!\n` +
+          '🔎 Это бот для проверки балансов криптокошельков.\n' +
+          '👨🏻‍💻 Автор: @SmartMainnet'
+        )
 
-            await bot.sendMessage(chatId,
-                'Отправьте адрес кошелька,\n' +
-                'баланс которого вы хотите проверить.'
-            )
-        } else {
-            await bot.sendMessage(chatId,
-                `👋🏻 Hello ${msg.from.first_name}${(msg.from.last_name === undefined) ? '': ` ${msg.from.last_name}`}!\n` +
-                '🔎 This is a Crypto Balance Checker Bot.\n' +
-                '👨🏻‍💻 Author: @SmartMainnet'
-            )
+        await bot.sendMessage(chatId,
+          'Отправьте адрес кошелька,\n' +
+          'баланс которого вы хотите проверить.'
+        )
+      } else {
+        await bot.sendMessage(chatId,
+          `👋🏻 Hello ${msg.from.first_name}${(msg.from.last_name === undefined) ? '': ` ${msg.from.last_name}`}!\n` +
+          '🔎 This is a Crypto Balance Checker Bot.\n' +
+          '👨🏻‍💻 Author: @SmartMainnet'
+        )
 
-            await bot.sendMessage(chatId,
-                'Send the address of the wallet\n' +
-                'whose balance you want to check.'
-            )
+        await bot.sendMessage(chatId,
+          'Send the address of the wallet\n' +
+          'whose balance you want to check.'
+        )
+      }
+
+      await users.findOne({ id: chatId }).then(async res => {
+        if (!res) {
+          await users.insertOne({
+            id: chatId,
+            username: msg.from.username,
+            first_name: msg.from.first_name,
+            last_name: msg.from.last_name,
+            start_date: new Date()
+          })
         }
-
-        await users.findOne({ id: chatId }).then(async res => {
-            if (res === null) {
-                await users.insertOne({
-                    id: chatId,
-                    username: msg.from.username,
-                    first_name: msg.from.first_name,
-                    last_name: msg.from.last_name,
-                    start_date: new Date(),
-                    calls: 0
-                })
-                
-                await info.findOne().then(async res => {
-                    if (res === null) {
-                        await info.insertOne({ users: 1 })
-                    } else {
-                        await info.updateOne({}, { $inc: { users: 1 } })
-                    }
-                })
-            }
-        })
-    } else if (text === '/post' && msg.from.username === 'SmartMainnet') {
-        await bot.sendMessage(chatId, 'Отправь мне пост')
-        isPost = true
-    } else if (isPost === true && msg.from.username === 'SmartMainnet') {
-        users.find().toArray(async (err, res) => {
-            for (let user of res) {
-                let chatId = user.id
-                await bot.sendMessage(chatId, text)
-            }
-        })
-        isPost = false
+      })
     } else {
-        await users.findOne({ id: chatId }).then(async res => {
-            if (res === null) {
-                await users.insertOne({
-                    id: chatId,
-                    username: msg.from.username,
-                    first_name: msg.from.first_name,
-                    last_name: msg.from.last_name,
-                    start_date: new Date(),
-                    calls: 0
-                })
-                await info.updateOne({}, { $inc: { users: 1 } })
-            }
-        })
-
-        try {
-            let web3 = new Web3(BNB_API)
-            let isAddress = await web3.utils.isAddress(text)
-
-            if(isAddress) {
-                let botMsg = await bot.sendMessage(chatId, 'Checking...')
-                let botMsgId = botMsg.message_id
-            
-                web3 = new Web3(ETH_API)
-                let eth = await web3.eth.getBalance(text)
-                
-                web3 = new Web3(BNB_API)
-                let bnb = await web3.eth.getBalance(text)
-
-                web3 = new Web3(MATIC_API)
-                let matic = await web3.eth.getBalance(text)
-                
-                web3 = new Web3(AVAX_API)
-                let avax = await web3.eth.getBalance(text)
-                
-                web3 = new Web3(FTM_API)
-                let ftm = await web3.eth.getBalance(text)
-                
-                bot.deleteMessage(chatId, botMsgId)
-                bot.sendMessage(chatId,
-                    `${web3.utils.fromWei(eth, 'ether')} ETH\n` +
-                    `${web3.utils.fromWei(bnb, 'ether')} BNB\n` +
-                    `${web3.utils.fromWei(matic, 'ether')} MATIC\n` +
-                    `${web3.utils.fromWei(avax, 'ether')} AVAX\n` +
-                    `${web3.utils.fromWei(ftm, 'ether')} FTM\n`
-                )
-
-                await users.updateOne({ id: chatId },
-                    {
-                        $set: {
-                            username: msg.from.username,
-                            first_name: msg.from.first_name,
-                            last_name: msg.from.last_name,
-                            date_last_call: new Date(),
-                            last_call: text
-                        },
-                        $inc: { calls: 1 }
-                    }
-                )
-                await info.updateOne({}, { $inc: { calls: 1 } })
-            } else {
-                if (language === 'ru') {
-                    await bot.sendMessage(chatId, 'Это не адрес')
-                } else {
-                    await bot.sendMessage(chatId, 'This is not an address')
-                }
-                
-                await users.updateOne({ id: chatId },
-                    {
-                        $set: {
-                            username: msg.from.username,
-                            first_name: msg.from.first_name,
-                            last_name: msg.from.last_name,
-                            date_last_bad_call: new Date(),
-                            last_bad_call: text
-                        },
-                        $inc: { bad_calls: 1 }
-                    }
-                )
-                await info.updateOne({}, { $inc: { bad_calls: 1 } })
-            }
-        } catch (err) {
-            bot.sendMessage(chatId, 'Error')
+      await users.findOne({ id: chatId }).then(async res => {
+        if (!res) {
+          await users.insertOne({
+            id: chatId,
+            username: msg.from.username,
+            first_name: msg.from.first_name,
+            last_name: msg.from.last_name,
+            start_date: new Date()
+          })
         }
+      })
+
+      let isAddress = await bnbWeb3.utils.isAddress(text)
+
+      if(isAddress) {
+        let botMsg = await bot.sendMessage(chatId, 'Checking...')
+        let botMsgId = botMsg.message_id
+
+        let eth = await ethWeb3.eth.getBalance(text)
+        let bnb = await bnbWeb3.eth.getBalance(text)
+        let matic = await maticWeb3.eth.getBalance(text)
+        let avax = await avaxWeb3.eth.getBalance(text)
+        let ftm = await ftmWeb3.eth.getBalance(text)
+        
+        bot.deleteMessage(chatId, botMsgId)
+        bot.sendMessage(chatId,
+          `${bnbWeb3.utils.fromWei(eth, 'ether')} ETH\n` +
+          `${bnbWeb3.utils.fromWei(bnb, 'ether')} BNB\n` +
+          `${bnbWeb3.utils.fromWei(matic, 'ether')} MATIC\n` +
+          `${bnbWeb3.utils.fromWei(avax, 'ether')} AVAX\n` +
+          `${bnbWeb3.utils.fromWei(ftm, 'ether')} FTM\n`
+        )
+
+        await users.updateOne({ id: chatId },
+          {
+            $set: {
+              username: msg.from.username,
+              first_name: msg.from.first_name,
+              last_name: msg.from.last_name,
+              date_last_call: new Date(),
+              last_call: text
+            },
+            $inc: { number_calls: 1 },
+            $push: {
+              calls: {
+                call: text,
+                date: new Date()
+              }
+            }
+          }
+        )
+      } else {
+        if (language === 'ru') {
+          await bot.sendMessage(chatId, 'Это не адрес')
+        } else {
+          await bot.sendMessage(chatId, 'This is not an address')
+        }
+        
+        await users.updateOne({ id: chatId },
+          {
+            $set: {
+              username: msg.from.username,
+              first_name: msg.from.first_name,
+              last_name: msg.from.last_name,
+              date_last_bad_call: new Date(),
+              last_bad_call: text
+            },
+            $inc: { number_bad_calls: 1 },
+            $push: {
+              bad_calls: {
+                call: text,
+                date: new Date()
+              }
+            }
+          }
+        )
+      }
     }
+  } catch (err) {
+    bot.sendMessage(chatId, 'Error')
+  }
 })
