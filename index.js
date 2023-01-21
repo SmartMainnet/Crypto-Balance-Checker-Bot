@@ -77,17 +77,17 @@ bot.on('message', async msg => {
         }
       })
 
-      let isAddress = await bnbWeb3.utils.isAddress(text)
+      const isAddress = await bnbWeb3.utils.isAddress(text)
 
       if(isAddress) {
-        let botMsg = await bot.sendMessage(chatId, 'Checking...')
-        let botMsgId = botMsg.message_id
+        const botMsg = await bot.sendMessage(chatId, 'Checking...')
+        const botMsgId = botMsg.message_id
 
-        let eth = await ethWeb3.eth.getBalance(text)
-        let bnb = await bnbWeb3.eth.getBalance(text)
-        let matic = await maticWeb3.eth.getBalance(text)
-        let avax = await avaxWeb3.eth.getBalance(text)
-        let ftm = await ftmWeb3.eth.getBalance(text)
+        const eth = await ethWeb3.eth.getBalance(text)
+        const bnb = await bnbWeb3.eth.getBalance(text)
+        const matic = await maticWeb3.eth.getBalance(text)
+        const avax = await avaxWeb3.eth.getBalance(text)
+        const ftm = await ftmWeb3.eth.getBalance(text)
         
         bot.deleteMessage(chatId, botMsgId)
         bot.sendMessage(chatId,
