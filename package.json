@@ -11,15 +11,12 @@
   "author": "SmartMainnet",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.0.1",
-    "mongodb": "^4.7.0",
-    "node-telegram-bot-api": "^0.57.0",
-    "web3": "^1.7.3"
+    "dotenv": "^16.0.3",
+    "mongodb": "^4.13.0",
+    "node-telegram-bot-api": "^0.61.0",
+    "web3": "^1.8.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.16"
-  },
-  "engines": {
-    "node": "16.15.1"
+    "nodemon": "^2.0.20"
   }
 }
