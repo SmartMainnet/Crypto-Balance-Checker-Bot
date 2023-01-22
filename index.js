@@ -21,6 +21,11 @@ const maticWeb3 = new Web3(MATIC_API)
 const avaxWeb3 = new Web3(AVAX_API)
 const ftmWeb3 = new Web3(FTM_API)
 
+bot.setMyCommands([
+  { command: '/start', description: 'Start Bot' },
+  { command: '/help', description: 'Help Info' }
+])
+
 bot.on('message', async msg => {
   const text = msg.text
   const chatId = msg.chat.id
@@ -38,7 +43,8 @@ bot.on('message', async msg => {
 
         await bot.sendMessage(chatId,
           'Отправьте адрес кошелька,\n' +
-          'баланс которого вы хотите проверить.'
+          'баланс которого вы хотите проверить.\n' +
+          'Пример: 0xb85eaf59e6dc69ac7b6d92c6c24e1a83b582b293'
         )
       } else {
         await bot.sendMessage(chatId,
@@ -49,7 +55,8 @@ bot.on('message', async msg => {
 
         await bot.sendMessage(chatId,
           'Send the address of the wallet\n' +
-          'whose balance you want to check.'
+          'whose balance you want to check.\n' +
+          'Example: 0xb85eaf59e6dc69ac7b6d92c6c24e1a83b582b293'
         )
       }
 
@@ -64,19 +71,21 @@ bot.on('message', async msg => {
           })
         }
       })
+    } else if (text === '/help') {
+      if (language === 'ru') {
+        await bot.sendMessage(chatId,
+          'Отправьте адрес кошелька,\n' +
+          'баланс которого вы хотите проверить.\n' +
+          'Пример: 0xb85eaf59e6dc69ac7b6d92c6c24e1a83b582b293'
+        )
+      } else {
+        await bot.sendMessage(chatId,
+          'Send the address of the wallet\n' +
+          'whose balance you want to check.\n' +
+          'Example: 0xb85eaf59e6dc69ac7b6d92c6c24e1a83b582b293'
+        )
+      }
     } else {
-      await users.findOne({ id: chatId }).then(async res => {
-        if (!res) {
-          await users.insertOne({
-            id: chatId,
-            username: msg.from.username,
-            first_name: msg.from.first_name,
-            last_name: msg.from.last_name,
-            start_date: new Date()
-          })
-        }
-      })
-
       const isAddress = await bnbWeb3.utils.isAddress(text)
 
       if(isAddress) {
@@ -144,6 +153,10 @@ bot.on('message', async msg => {
       }
     }
   } catch (err) {
-    bot.sendMessage(chatId, 'Error')
+    if (language === 'ru') {
+      await bot.sendMessage(chatId, 'Что-то пошло не так')
+    } else {
+      await bot.sendMessage(chatId, 'Something went wrong')
+    }
   }
 })
