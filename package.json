@@ -9,7 +9,7 @@
   },
   "keywords": [],
   "author": "SmartMainnet",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^16.0.3",
     "mongodb": "^4.13.0",
