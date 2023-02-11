@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This is a Telegram bot for checking the balances of crypto wallets. It checks the balance of addresses in blockchains (Ethereum, Binance Smart Chain, Polygon, Avalanche, Fantom)",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"

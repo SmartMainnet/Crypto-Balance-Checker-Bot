@@ -1,7 +1,10 @@
-require('dotenv').config()
-const { STICKER, BOT_API, ETH_API, BNB_API, MATIC_API, AVAX_API, FTM_API, MONGODB_URI } = process.env
+import 'dotenv/config'
+import { MongoClient } from 'mongodb'
+import TelegramApi from 'node-telegram-bot-api'
+import Web3 from 'web3'
 
-const { MongoClient } = require('mongodb')
+const { BOT_TOKEN, MONGODB_URI, STICKER, ETH_API, BNB_API, MATIC_API, AVAX_API, FTM_API } = process.env
+
 const client = new MongoClient(MONGODB_URI)
 
 client.connect()
@@ -9,17 +12,13 @@ client.connect()
 const db = client.db('crypto-balance-checker-bot')
 const users = db.collection('users')
 
-const Web3 = require('web3')
-const TelegramApi = require('node-telegram-bot-api')
-
-const token = BOT_API
-const bot = new TelegramApi(token, { polling: true })
-
 const ethWeb3 = new Web3(ETH_API)
 const bnbWeb3 = new Web3(BNB_API)
 const maticWeb3 = new Web3(MATIC_API)
 const avaxWeb3 = new Web3(AVAX_API)
 const ftmWeb3 = new Web3(FTM_API)
+
+const bot = new TelegramApi(BOT_TOKEN, { polling: true })
 
 bot.setMyCommands([
   { command: '/start', description: 'Start Bot' },
